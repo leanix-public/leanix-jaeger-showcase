@@ -1,0 +1,206 @@
+{
+    "processors": [
+        {
+            "processorType": "inboundFactSheet",
+            "processorName": "Microservice FS creation",
+            "type": "Microservice",
+            "filter": {
+                "exactType": "Microservice"
+            },
+            "identifier": {
+                "external": {
+                    "id": {
+                        "expr": "${content.id}"
+                    },
+                    "type": {
+                        "expr": "externalId"
+                    }
+                }
+            },
+            "run": 0,
+            "updates": [
+                {
+                    "key": {
+                        "expr": "name"
+                    },
+                    "values": [
+                        {
+                            "expr": "${content.id}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "processorType": "inboundFactSheet",
+            "processorName": "API FS creation",
+            "type": "API",
+            "filter": {
+                "exactType": "API"
+            },
+            "identifier": {
+                "external": {
+                    "id": {
+                        "expr": "${content.id}"
+                    },
+                    "type": {
+                        "expr": "externalId"
+                    }
+                }
+            },
+            "run": 0,
+            "updates": [
+                {
+                    "key": {
+                        "expr": "name"
+                    },
+                    "values": [
+                        {
+                            "expr": "${data.name}"
+                        }
+                    ]
+                },
+                {
+                    "key": {
+                        "expr": "currentNumberOfCalls"
+                    },
+                    "values": [
+                        {
+                            "expr": "${data.count}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "processorType": "inboundRelation",
+            "processorName": "Relation from API to Consumer Microservice",
+            "type": "relAPIToConsumerMicroservice",
+            "filter": {
+                "exactType": "API"
+            },
+            "from": {
+                "external": {
+                    "id": {
+                        "expr": "${content.id}"
+                    },
+                    "type": {
+                        "expr": "externalId"
+                    }
+                }
+            },
+            "to": {
+                "external": {
+                    "id": {
+                        "expr": "${integration.valueOfForEach}"
+                    },
+                    "type": {
+                        "expr": "externalId"
+                    }
+                }
+            },
+            "run": 1,
+            "forEach": "${data.consumers}"
+        },
+        {
+            "processorType": "inboundRelation",
+            "processorName": "Rel from API to Provider Microservice",
+            "type": "relAPIToProviderMicroservice",
+            "filter": {
+                "exactType": "API"
+            },
+            "from": {
+                "external": {
+                    "id": {
+                        "expr": "${content.id}"
+                    },
+                    "type": {
+                        "expr": "externalId"
+                    }
+                }
+            },
+            "to": {
+                "external": {
+                    "id": {
+                        "expr": "${data.provider}"
+                    },
+                    "type": {
+                        "expr": "externalId"
+                    }
+                }
+            },
+            "run": 1
+        },
+        {
+            "processorType": "inboundMetrics",
+            "processorName": "Metrics data for call counts",
+            "filter": {
+                "exactType": "API"
+            },
+            "run": 1,
+            "updates": [
+                {
+                    "key": {
+                        "expr": "measurement"
+                    },
+                    "values": [
+                        {
+                            "expr": "Jaeger API Calls"
+                        }
+                    ]
+                },
+                {
+                    "key": {
+                        "expr": "time"
+                    },
+                    "values": [
+                        {
+                            "expr": "${data.time}"
+                        }
+                    ]
+                },
+                {
+                    "key": {
+                        "expr": "fieldKey"
+                    },
+                    "values": [
+                        {
+                            "expr": "count"
+                        }
+                    ]
+                },
+                {
+                    "key": {
+                        "expr": "fieldValueNumber"
+                    },
+                    "values": [
+                        {
+                            "expr": "${data.count}"
+                        }
+                    ]
+                },
+                {
+                    "key": {
+                        "expr": "tagKey"
+                    },
+                    "values": [
+                        {
+                            "expr": "apiId"
+                        }
+                    ]
+                },
+                {
+                    "key": {
+                        "expr": "tagValue"
+                    },
+                    "values": [
+                        {
+                            "expr": "${content.id}"
+                        }
+                    ]
+                }
+            ],
+            "logLevel": "debug"
+        }
+    ]
+}
